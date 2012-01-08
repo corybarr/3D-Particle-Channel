@@ -29,7 +29,7 @@ void setup() {
   
   particles = new Particle[maxParticles];
   for (int i = 0; i < maxParticles; i++) {
-    particles[i] = new Particle(random(0.3, 1.0f), random(0.04f, 0.14f));
+    particles[i] = new Particle(random(0.3, 1.3f), random(0.10f, 0.20f));
   }
   
   framesUntilNextParticle = floor(random(minFramesBetweenParticleBirth, minFramesBetweenParticleBirth + 1));
@@ -117,7 +117,7 @@ class Particle {
   float colBlue = 0.0f;
   float colChangeSpeed = 0.25f;
   color startColor = color(0, 0, 255);
-  color endColor = color(0, 255, 0);
+  color endColor = color(212, 160, 23);
   color curColor;
   int colChangeDir = 1;
   int partSize;
@@ -160,7 +160,6 @@ class Particle {
     pushMatrix();
     translate(curX, curY, curZ);
     fill(curColor);
-    noStroke();
     sphere(partSize);
     popMatrix();
     curY -= fallRate;

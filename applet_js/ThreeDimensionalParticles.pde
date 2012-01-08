@@ -15,6 +15,9 @@ int minFramesBetweenParticleBirth = 30;
 int framesUntilNextParticle;
 
 Particle[] particles;
+PImage dancer;
+PImage[] instrumentImages;
+PImage ropeImage;
 
 void setup() {
   size(500, 500, OPENGL);
@@ -26,10 +29,16 @@ void setup() {
   
   particles = new Particle[maxParticles];
   for (int i = 0; i < maxParticles; i++) {
-    particles[i] = new Particle(random(0.3, 1.0f), random(0.04f, 0.07f));
+    particles[i] = new Particle(random(0.3, 1.3f), random(0.10f, 0.20f));
   }
   
   framesUntilNextParticle = floor(random(minFramesBetweenParticleBirth, minFramesBetweenParticleBirth + 1));
+  
+  dancer = loadImage("steph.resized.png");
+  instrumentImages = new PImage[2];
+  instrumentImages[0] = loadImage("zil.resized.png");
+  instrumentImages[1] = loadImage("tambourine.resized.png");
+  ropeImage = loadImage("rope.resized.jpg");
 }
 
 void draw() {
@@ -50,7 +59,39 @@ void draw() {
     }
   }
 
-  drawBox(300);
+  drawDancer();
+  
+  drawInstruments();
+}
+
+void drawInstruments() {
+  pushMatrix();
+  translate(75, 100, 0);
+
+  //fill(125, 125, 125);
+  //stroke(212, 160, 23);
+  //strokeWeight(10);
+  //line(0, -100, 0, 0, 0, 0);
+  imageMode(CENTER);
+  image(ropeImage, 0, -100);
+  image(instrumentImages[0], 0, 0);
+  popMatrix();
+
+  pushMatrix();
+  translate(width - 75, 100, 0);
+  //line(0, -100, 0, 0, -45, 0);
+  imageMode(CENTER);
+  image(ropeImage, 0, -170);
+  image(instrumentImages[1], 0, 0);
+  popMatrix();
+}
+
+void drawDancer() {
+  pushMatrix();
+  translate(width / 2, height / 2, 0);
+  imageMode(CENTER);
+  image(dancer, 0, 0);
+  popMatrix();
 }
 
 void drawBox(int boxSize) {
@@ -68,11 +109,34 @@ class Particle {
   float curY;
   float speed = 0.05f;
   float fallRate = 0.5f;  
-  float orbitSizeX = width / 2 - 100;
+  float orbitSizeX = width / 2 - 150;
   float orbitSizeZ = orbitSizeX;
   int size = 5;
   color col = color(0, 0, 255);
   int framesSinceBirth = 0;
+  float colBlue = 0.0f;
+  float colChangeSpeed = 0.25f;
+  color startColor = color(0, 0, 255);
+  color endColor = color(212, 160, 23);
+  color curColor;
+  int colChangeDir = 1;
+  int partSize;
+  int amountCanGoAbove0 = 85;
+  
+  void changeColor() {
+    float lerpAmount = map(height - curY, 0, height + amountCanGoAbove0, 0.0f, 1.0f);
+    curColor = lerpColor(startColor, endColor, lerpAmount);
+    /*
+    colBlue += colChangeSpeed * colChangeDir;
+    if (colBlue < 0.0f) {
+      colBlue = 0.0f;
+      colChangeDir = 1;
+    } else if (colBlue > 255.0f) {
+      colBlue = 255.0f;
+      colChangeDir = -1;
+    }
+    */
+  }
   
   Particle(float _fallRate, float _speed) {
     //originX = width / 2;
@@ -80,22 +144,32 @@ class Particle {
     curY = originY;
     fallRate = _fallRate;
     speed = _speed;
+    curColor = startColor;
+    partSize = generateSize();
+  }
+  
+  int generateSize() {
+    return floor(random(3, 8));
   }
   
   void draw() {
     framesSinceBirth++;
-    float curX = originX + sin(framesSinceBirth * speed) * orbitSizeX;
-    float curZ = originZ + cos(framesSinceBirth * speed) * orbitSizeZ;
+    float curX = originX + sin(framesSinceBirth * speed) * min(height - curY * 0.97, orbitSizeX);
+    float curZ = originZ + cos(framesSinceBirth * speed) * min(height - curY * 0.97, orbitSizeZ);
 
     pushMatrix();
     translate(curX, curY, curZ);
-    fill(col);
-    sphere(5);
+    fill(curColor);
+    sphere(partSize);
     popMatrix();
     curY -= fallRate;
+    changeColor();
     
-    if(curY > height || curY < 0.0f) {
+    //letting go higher than 0 because camera perspective shows "above" canvas
+    if(curY > height || curY < 0.0f - amountCanGoAbove0) {
       curY = originY;
+      size = generateSize();
+      curColor = startColor;
     }
   }
 }
