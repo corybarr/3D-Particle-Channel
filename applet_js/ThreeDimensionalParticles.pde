@@ -2,68 +2,54 @@
 //(time passed) But then resumed because not having trails is ok.
 
 float curRotation = 0.0f;
-float rotationSpeed = 0.05f;
 float particleOriginX, particleOriginY, particleOriginZ;
 float orbitSizeX, orbitSizeZ;
 float yMax, yMin;
 float particleFallRate;
 float curY;
-float fadeRate;
 
 float testPartSpeed, testPartX, testPartY;
+int maxParticles = 20;
+int curNumParticles = 1;
+int minFramesBetweenParticleBirth = 30;
+int framesUntilNextParticle;
 
-Particle p;
+Particle[] particles;
 
 void setup() {
   size(500, 500, OPENGL);
 
-  //debug
-  testPartSpeed = 1.0f;
-  testPartX = 0;
-  testPartY = height / 2;
-
   noStroke();
   background(0);
   frameRate(30);
-  //smooth();
-    
-  particleOriginX = width / 2;
-  particleOriginY = height / 2;
-  particleOriginZ = 0.0f;
-  orbitSizeX = width / 2 - 100;
-  orbitSizeZ = orbitSizeX;
-  yMax = height;
-  yMin = particleOriginY;
-  curY = yMin;
-  particleFallRate = 0.5f;
-  fadeRate = 20;
+  smooth();
   
-  p = new Particle();
+  particles = new Particle[maxParticles];
+  for (int i = 0; i < maxParticles; i++) {
+    particles[i] = new Particle(random(0.3, 1.0f), random(0.04f, 0.07f));
+  }
+  
+  framesUntilNextParticle = floor(random(minFramesBetweenParticleBirth, minFramesBetweenParticleBirth + 1));
 }
 
 void draw() {
   //fadeScreen();
   background(0);
   fill(0, 0, 200);
-  //lights();
-  
-  /*
-  float curX = particleOriginX + sin(frameCount * rotationSpeed) * orbitSizeX;
-  float curZ = particleOriginZ + cos(frameCount * rotationSpeed) * orbitSizeZ;
-  pushMatrix();
-  translate(curX, curY, curZ);
-  sphere(5);
-  popMatrix();
-  */
-  
-  curY += particleFallRate;
-  //falling means adding positively to the y axis
-  if(curY > yMax) {
-    curY = yMin;
+  lights();
+    
+  for (int i = 0; i < curNumParticles; i++) {
+    particles[i].draw();
   }
-  
-  p.draw();
-  
+
+  if (curNumParticles < maxParticles) {
+    framesUntilNextParticle--;
+    if (framesUntilNextParticle == 0) {
+        curNumParticles++;
+        framesUntilNextParticle = floor(random(minFramesBetweenParticleBirth, minFramesBetweenParticleBirth + 30));
+    }
+  }
+
   drawBox(300);
 }
 
@@ -76,49 +62,50 @@ void drawBox(int boxSize) {
 }
 
 class Particle {
-  float posOriginX = width / 2;
-  float posOriginY = height / 2;
+  float originX = width / 2;
+  float originY = height;
+  float originZ = 0.0f;
   float curY;
-  float speed = 1.0f;
-  float fallRate = 0.0f;  
+  float speed = 0.05f;
+  float fallRate = 0.5f;  
   float orbitSizeX = width / 2 - 100;
   float orbitSizeZ = orbitSizeX;
   int size = 5;
-  Color col = new Color(0, 0, 255);
+  color col = color(0, 0, 255);
+  int framesSinceBirth = 0;
   
-  Particle(float x, float y, float z) {
-    posOriginX = x;
-    posOriginY = y;
-  }
-  
-  Particle() {
+  Particle(float _fallRate, float _speed) {
+    //originX = width / 2;
+    //originY = height / 2;
+    curY = originY;
+    fallRate = _fallRate;
+    speed = _speed;
   }
   
   void draw() {
+    framesSinceBirth++;
+    float curX = originX + sin(framesSinceBirth * speed) * orbitSizeX;
+    float curZ = originZ + cos(framesSinceBirth * speed) * orbitSizeZ;
+
     pushMatrix();
     translate(curX, curY, curZ);
-    float curX = particleOriginX + sin(frameCount * rotationSpeed) * orbitSizeX;
-    float curZ = particleOriginZ + cos(frameCount * rotationSpeed) * orbitSizeZ;
     fill(col);
     sphere(5);
     popMatrix();
-    curY += fallRate;
+    curY -= fallRate;
+    
+    if(curY > height || curY < 0.0f) {
+      curY = originY;
+    }
   }
 }
 
 void fadeScreen() {
   pushMatrix();
-  translate(0, 0, -300);
-  fill(0, fadeRate);
+  translate(0, 0, 0);
+  fill(0, 0.2);
   //box(width / 3);
-  rect(-200, -200, width * 2, height * 2);
-  popMatrix();
-  
-  
-  pushMatrix();
-  translate(0, 0);
-  fill(0, faderate);
-  rect(0, 0, width , 2 * height / 3);
+  rect(0, 0, width, height);
   popMatrix();
 }
 

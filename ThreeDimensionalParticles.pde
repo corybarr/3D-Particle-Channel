@@ -2,7 +2,6 @@
 //(time passed) But then resumed because not having trails is ok.
 
 float curRotation = 0.0f;
-float rotationSpeed = 0.05f;
 float particleOriginX, particleOriginY, particleOriginZ;
 float orbitSizeX, orbitSizeZ;
 float yMax, yMin;
@@ -10,7 +9,10 @@ float particleFallRate;
 float curY;
 
 float testPartSpeed, testPartX, testPartY;
-int maxParticles = 1;
+int maxParticles = 20;
+int curNumParticles = 1;
+int minFramesBetweenParticleBirth = 30;
+int framesUntilNextParticle;
 
 Particle[] particles;
 
@@ -23,8 +25,11 @@ void setup() {
   smooth();
   
   particles = new Particle[maxParticles];
-  particles[0] = new Particle(random(0.3, 1.0f));
+  for (int i = 0; i < maxParticles; i++) {
+    particles[i] = new Particle(random(0.3, 1.0f), random(0.04f, 0.07f));
+  }
   
+  framesUntilNextParticle = floor(random(minFramesBetweenParticleBirth, minFramesBetweenParticleBirth + 1));
 }
 
 void draw() {
@@ -33,7 +38,18 @@ void draw() {
   fill(0, 0, 200);
   lights();
     
-  particles[0].draw();
+  for (int i = 0; i < curNumParticles; i++) {
+    particles[i].draw();
+  }
+
+  if (curNumParticles < maxParticles) {
+    framesUntilNextParticle--;
+    if (framesUntilNextParticle == 0) {
+        curNumParticles++;
+        framesUntilNextParticle = floor(random(minFramesBetweenParticleBirth, minFramesBetweenParticleBirth + 30));
+    }
+  }
+
   drawBox(300);
 }
 
@@ -50,36 +66,53 @@ class Particle {
   float originY = height;
   float originZ = 0.0f;
   float curY;
-  float speed = 1.0f;
+  float speed = 0.05f;
   float fallRate = 0.5f;  
   float orbitSizeX = width / 2 - 100;
   float orbitSizeZ = orbitSizeX;
   int size = 5;
   color col = color(0, 0, 255);
+  int framesSinceBirth = 0;
+  float colBlue = 0.0f;
+  float colChangeSpeed = 0.25f;
+  int colChangeDir = 1;
   
-  Particle(float _fallRate) {
+  void changeColor() {
+    colBlue += colChangeSpeed * colChangeDir;
+    if (colBlue < 0.0f) {
+      colBlue = 0.0f;
+      colChangeDir = 1;
+    } else if (colBlue > 255.0f) {
+      colBlue = 255.0f;
+      colChangeDir = -1;
+    }
+  }
+  
+  Particle(float _fallRate, float _speed) {
     //originX = width / 2;
     //originY = height / 2;
     curY = originY;
     fallRate = _fallRate;
+    speed = _speed;
   }
   
   void draw() {
+    framesSinceBirth++;
+    float curX = originX + sin(framesSinceBirth * speed) * min(height - curY * 0.97, orbitSizeX);
+    float curZ = originZ + cos(framesSinceBirth * speed) * min(height - curY * 0.97, orbitSizeZ);
+
     pushMatrix();
-    float curX = originX + sin(frameCount * rotationSpeed) * orbitSizeX;
-    float curZ = originZ + cos(frameCount * rotationSpeed) * orbitSizeZ;
     translate(curX, curY, curZ);
-    fill(col);
+    fill(colBlue, colBlue, 255);
     sphere(5);
     popMatrix();
     curY -= fallRate;
+    changeColor();
     
     if(curY > height || curY < 0.0f) {
       curY = originY;
+      colBlue = 0.0f;
     }
-    
-    //DEBUG
-    println(particleOriginX);
   }
 }
 
