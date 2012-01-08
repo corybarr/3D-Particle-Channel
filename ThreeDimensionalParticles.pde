@@ -26,7 +26,7 @@ void setup() {
   
   particles = new Particle[maxParticles];
   for (int i = 0; i < maxParticles; i++) {
-    particles[i] = new Particle(random(0.3, 1.0f), random(0.04f, 0.07f));
+    particles[i] = new Particle(random(0.3, 1.0f), random(0.04f, 0.14f));
   }
   
   framesUntilNextParticle = floor(random(minFramesBetweenParticleBirth, minFramesBetweenParticleBirth + 1));
@@ -75,9 +75,17 @@ class Particle {
   int framesSinceBirth = 0;
   float colBlue = 0.0f;
   float colChangeSpeed = 0.25f;
+  color startColor = color(0, 0, 255);
+  color endColor = color(0, 255, 0);
+  color curColor;
   int colChangeDir = 1;
+  int partSize;
+  int amountCanGoAbove0 = 85;
   
   void changeColor() {
+    float lerpAmount = map(height - curY, 0, height + amountCanGoAbove0, 0.0f, 1.0f);
+    curColor = lerpColor(startColor, endColor, lerpAmount);
+    /*
     colBlue += colChangeSpeed * colChangeDir;
     if (colBlue < 0.0f) {
       colBlue = 0.0f;
@@ -86,6 +94,7 @@ class Particle {
       colBlue = 255.0f;
       colChangeDir = -1;
     }
+    */
   }
   
   Particle(float _fallRate, float _speed) {
@@ -94,6 +103,12 @@ class Particle {
     curY = originY;
     fallRate = _fallRate;
     speed = _speed;
+    curColor = startColor;
+    partSize = generateSize();
+  }
+  
+  int generateSize() {
+    return floor(random(3, 8));
   }
   
   void draw() {
@@ -103,15 +118,17 @@ class Particle {
 
     pushMatrix();
     translate(curX, curY, curZ);
-    fill(colBlue, colBlue, 255);
-    sphere(5);
+    fill(curColor);
+    sphere(partSize);
     popMatrix();
     curY -= fallRate;
     changeColor();
     
-    if(curY > height || curY < 0.0f) {
+    //letting go higher than 0 because camera perspective shows "above" canvas
+    if(curY > height || curY < 0.0f - amountCanGoAbove0) {
       curY = originY;
-      colBlue = 0.0f;
+      size = generateSize();
+      curColor = startColor;
     }
   }
 }
