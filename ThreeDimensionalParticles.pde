@@ -15,6 +15,9 @@ int minFramesBetweenParticleBirth = 30;
 int framesUntilNextParticle;
 
 Particle[] particles;
+PImage dancer;
+PImage[] instrumentImages;
+PImage ropeImage;
 
 void setup() {
   size(500, 500, OPENGL);
@@ -30,6 +33,12 @@ void setup() {
   }
   
   framesUntilNextParticle = floor(random(minFramesBetweenParticleBirth, minFramesBetweenParticleBirth + 1));
+  
+  dancer = loadImage("steph.resized.png");
+  instrumentImages = new PImage[2];
+  instrumentImages[0] = loadImage("zil.resized.png");
+  instrumentImages[1] = loadImage("tambourine.resized.png");
+  ropeImage = loadImage("rope.resized.jpg");
 }
 
 void draw() {
@@ -50,7 +59,39 @@ void draw() {
     }
   }
 
-  drawBox(300);
+  drawDancer();
+  
+  drawInstruments();
+}
+
+void drawInstruments() {
+  pushMatrix();
+  translate(75, 100, 0);
+
+  //fill(125, 125, 125);
+  //stroke(212, 160, 23);
+  //strokeWeight(10);
+  //line(0, -100, 0, 0, 0, 0);
+  imageMode(CENTER);
+  image(ropeImage, 0, -100);
+  image(instrumentImages[0], 0, 0);
+  popMatrix();
+
+  pushMatrix();
+  translate(width - 75, 100, 0);
+  //line(0, -100, 0, 0, -45, 0);
+  imageMode(CENTER);
+  image(ropeImage, 0, -170);
+  image(instrumentImages[1], 0, 0);
+  popMatrix();
+}
+
+void drawDancer() {
+  pushMatrix();
+  translate(width / 2, height / 2, 0);
+  imageMode(CENTER);
+  image(dancer, 0, 0);
+  popMatrix();
 }
 
 void drawBox(int boxSize) {
@@ -68,7 +109,7 @@ class Particle {
   float curY;
   float speed = 0.05f;
   float fallRate = 0.5f;  
-  float orbitSizeX = width / 2 - 100;
+  float orbitSizeX = width / 2 - 150;
   float orbitSizeZ = orbitSizeX;
   int size = 5;
   color col = color(0, 0, 255);
@@ -119,6 +160,7 @@ class Particle {
     pushMatrix();
     translate(curX, curY, curZ);
     fill(curColor);
+    noStroke();
     sphere(partSize);
     popMatrix();
     curY -= fallRate;
