@@ -19,6 +19,9 @@ PImage dancer;
 PImage[] instrumentImages;
 PImage ropeImage;
 
+color dancerStartColor = color(255, 255, 255);
+color dancerEndColor = color(212, 160, 23);
+
 void setup() {
   size(500, 500, OPENGL);
 
@@ -47,10 +50,12 @@ void draw() {
   fill(0, 0, 200);
   lights();
     
+  
   for (int i = 0; i < curNumParticles; i++) {
     particles[i].draw();
   }
-
+  
+  
   if (curNumParticles < maxParticles) {
     framesUntilNextParticle--;
     if (framesUntilNextParticle == 0) {
@@ -65,32 +70,35 @@ void draw() {
 }
 
 void drawInstruments() {
+  fill(255, 255, 255);
+  
   pushMatrix();
   translate(75, 100, 0);
-
-  //fill(125, 125, 125);
-  //stroke(212, 160, 23);
-  //strokeWeight(10);
-  //line(0, -100, 0, 0, 0, 0);
-  imageMode(CENTER);
-  image(ropeImage, 0, -100);
-  image(instrumentImages[0], 0, 0);
+  //imageMode(CENTER);
+  //image(ropeImage, 0 - ropeImage.width / 2, -100);
+  image(instrumentImages[0], 0 - instrumentImages[0].width / 2, 0 - instrumentImages[0].height / 2);
   popMatrix();
 
   pushMatrix();
   translate(width - 75, 100, 0);
   //line(0, -100, 0, 0, -45, 0);
-  imageMode(CENTER);
-  image(ropeImage, 0, -170);
-  image(instrumentImages[1], 0, 0);
+  //imageMode(CENTER);
+  //image(ropeImage, 0 - ropeImage.width / 2, -170); //rope not working in Processing.js
+  image(instrumentImages[1], 0 - instrumentImages[1].width / 2, 0 - instrumentImages[1].height / 2);
   popMatrix();
 }
 
 void drawDancer() {
+  
+  //
+  float lerpAmount = abs(sin(frameCount * 0.005));
+  color dancerCurColor = lerpColor(dancerStartColor, dancerEndColor, lerpAmount);
+  
   pushMatrix();
   translate(width / 2, height / 2, 0);
-  imageMode(CENTER);
-  image(dancer, 0, 0);
+  //imageMode(CENTER); //is not working with Processing.js
+  fill(dancerCurColor);
+  image(dancer, 0 - dancer.width / 2, 0 - dancer.height / 2);
   popMatrix();
 }
 
@@ -126,16 +134,6 @@ class Particle {
   void changeColor() {
     float lerpAmount = map(height - curY, 0, height + amountCanGoAbove0, 0.0f, 1.0f);
     curColor = lerpColor(startColor, endColor, lerpAmount);
-    /*
-    colBlue += colChangeSpeed * colChangeDir;
-    if (colBlue < 0.0f) {
-      colBlue = 0.0f;
-      colChangeDir = 1;
-    } else if (colBlue > 255.0f) {
-      colBlue = 255.0f;
-      colChangeDir = -1;
-    }
-    */
   }
   
   Particle(float _fallRate, float _speed) {
@@ -172,14 +170,5 @@ class Particle {
       curColor = startColor;
     }
   }
-}
-
-void fadeScreen() {
-  pushMatrix();
-  translate(0, 0, 0);
-  fill(0, 0.2);
-  //box(width / 3);
-  rect(0, 0, width, height);
-  popMatrix();
 }
 
