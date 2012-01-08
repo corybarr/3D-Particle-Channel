@@ -8,62 +8,32 @@ float orbitSizeX, orbitSizeZ;
 float yMax, yMin;
 float particleFallRate;
 float curY;
-float fadeRate;
 
 float testPartSpeed, testPartX, testPartY;
+int maxParticles = 1;
 
-Particle p;
+Particle[] particles;
 
 void setup() {
   size(500, 500, OPENGL);
 
-  //debug
-  testPartSpeed = 1.0f;
-  testPartX = 0;
-  testPartY = height / 2;
-
   noStroke();
   background(0);
   frameRate(30);
-  //smooth();
-    
-  particleOriginX = width / 2;
-  particleOriginY = height / 2;
-  particleOriginZ = 0.0f;
-  orbitSizeX = width / 2 - 100;
-  orbitSizeZ = orbitSizeX;
-  yMax = height;
-  yMin = particleOriginY;
-  curY = yMin;
-  particleFallRate = 0.5f;
-  fadeRate = 20;
+  smooth();
   
-  p = new Particle();
+  particles = new Particle[maxParticles];
+  particles[0] = new Particle(random(0.3, 1.0f));
+  
 }
 
 void draw() {
   //fadeScreen();
   background(0);
   fill(0, 0, 200);
-  //lights();
-  
-  /*
-  float curX = particleOriginX + sin(frameCount * rotationSpeed) * orbitSizeX;
-  float curZ = particleOriginZ + cos(frameCount * rotationSpeed) * orbitSizeZ;
-  pushMatrix();
-  translate(curX, curY, curZ);
-  sphere(5);
-  popMatrix();
-  */
-  
-  curY += particleFallRate;
-  //falling means adding positively to the y axis
-  if(curY > yMax) {
-    curY = yMin;
-  }
-  
-  p.draw();
-  
+  lights();
+    
+  particles[0].draw();
   drawBox(300);
 }
 
@@ -76,49 +46,49 @@ void drawBox(int boxSize) {
 }
 
 class Particle {
-  float posOriginX = width / 2;
-  float posOriginY = height / 2;
+  float originX = width / 2;
+  float originY = height;
+  float originZ = 0.0f;
   float curY;
   float speed = 1.0f;
-  float fallRate = 0.0f;  
+  float fallRate = 0.5f;  
   float orbitSizeX = width / 2 - 100;
   float orbitSizeZ = orbitSizeX;
   int size = 5;
-  Color col = new Color(0, 0, 255);
+  color col = color(0, 0, 255);
   
-  Particle(float x, float y, float z) {
-    posOriginX = x;
-    posOriginY = y;
-  }
-  
-  Particle() {
+  Particle(float _fallRate) {
+    //originX = width / 2;
+    //originY = height / 2;
+    curY = originY;
+    fallRate = _fallRate;
   }
   
   void draw() {
     pushMatrix();
+    float curX = originX + sin(frameCount * rotationSpeed) * orbitSizeX;
+    float curZ = originZ + cos(frameCount * rotationSpeed) * orbitSizeZ;
     translate(curX, curY, curZ);
-    float curX = particleOriginX + sin(frameCount * rotationSpeed) * orbitSizeX;
-    float curZ = particleOriginZ + cos(frameCount * rotationSpeed) * orbitSizeZ;
     fill(col);
     sphere(5);
     popMatrix();
-    curY += fallRate;
+    curY -= fallRate;
+    
+    if(curY > height || curY < 0.0f) {
+      curY = originY;
+    }
+    
+    //DEBUG
+    println(particleOriginX);
   }
 }
 
 void fadeScreen() {
   pushMatrix();
-  translate(0, 0, -300);
-  fill(0, fadeRate);
+  translate(0, 0, 0);
+  fill(0, 0.2);
   //box(width / 3);
-  rect(-200, -200, width * 2, height * 2);
-  popMatrix();
-  
-  
-  pushMatrix();
-  translate(0, 0);
-  fill(0, faderate);
-  rect(0, 0, width , 2 * height / 3);
+  rect(0, 0, width, height);
   popMatrix();
 }
 
